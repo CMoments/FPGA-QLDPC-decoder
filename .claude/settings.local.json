@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import stim; import pymatching; import networkx; print\\('ok'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python -c \"import stim; print\\(stim.__version__\\)\")",
+      "Bash(where python *)",
+      "Bash(conda info *)",
+      "Bash(C:/Users/ASUS/anaconda3/python.exe -c \"import stim; print\\('stim ok'\\)\")",
+      "Bash(C:/Users/ASUS/anaconda3/python.exe -c \"import pymatching; print\\('pymatching ok'\\)\")",
+      "Bash(C:/Users/ASUS/anaconda3/envs/quai/python.exe *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

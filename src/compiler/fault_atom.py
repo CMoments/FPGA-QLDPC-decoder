@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from __future__ import annotations
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -11,26 +12,28 @@ class FaultAtom:
     time_slice: int
     window_size: int
 
-    def __init__(self, atom_id, detector_signature, data_error_candidates,
-                 prior_weight, tile, time_slice, window_size):
-        object.__setattr__(self, 'atom_id', atom_id)
-        object.__setattr__(self, 'detector_signature', frozenset(detector_signature))
-        object.__setattr__(self, 'data_error_candidates', tuple(data_error_candidates))
-        object.__setattr__(self, 'prior_weight', prior_weight)
-        object.__setattr__(self, 'tile', tuple(tile))
-        object.__setattr__(self, 'time_slice', time_slice)
-        object.__setattr__(self, 'window_size', window_size)
+    def __post_init__(self):
+        object.__setattr__(self, 'detector_signature', frozenset(self.detector_signature))
+        object.__setattr__(self, 'data_error_candidates', tuple(self.data_error_candidates))
+        object.__setattr__(self, 'tile', tuple(self.tile))
 
 
 class FaultAtomLibrary:
     def __init__(self):
-        self._by_signature = {}
+        self._by_signature: dict[frozenset, list[FaultAtom]] = {}
 
     def add(self, atom: FaultAtom) -> None:
-        self._by_signature[atom.detector_signature] = atom
+        sig = atom.detector_signature
+        if sig not in self._by_signature:
+            self._by_signature[sig] = []
+        self._by_signature[sig].append(atom)
 
     def lookup(self, signature) -> FaultAtom | None:
-        return self._by_signature.get(frozenset(signature))
+        """Return the highest-weight atom for this signature, or None."""
+        candidates = self._by_signature.get(frozenset(signature))
+        if not candidates:
+            return None
+        return max(candidates, key=lambda a: a.prior_weight)
 
     def coverage(self, total_events: int, hit_events: int) -> float:
         if total_events == 0:
@@ -38,4 +41,4 @@ class FaultAtomLibrary:
         return hit_events / total_events
 
     def __len__(self) -> int:
-        return len(self._by_signature)
+        return sum(len(v) for v in self._by_signature.values())

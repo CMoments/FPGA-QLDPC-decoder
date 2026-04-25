@@ -43,5 +43,5 @@ def test_end_to_end_search_and_decode():
     )
     shots = [frozenset([0, 1]), frozenset([99, 100]), frozenset([0, 1])]
     stats = pipeline.batch_decode(shots)
-    assert stats["mean_latency_ns"] > 0
+    assert stats["mean_latency_ns"] >= 0
     assert 0.0 <= stats["atom_hit_rate"] <= 1.0

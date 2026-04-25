@@ -14,6 +14,8 @@ class SearchLoop:
         self._scorer = scorer
 
     def run(self, candidates: list) -> SearchResult:
+        if not candidates:
+            raise ValueError("candidates list is empty")
         scored = [(c, self._scorer.score(c)) for c in candidates]
         scored.sort(key=lambda x: x[1])
         best_candidate, best_score = scored[0]

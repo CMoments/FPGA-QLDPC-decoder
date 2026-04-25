@@ -1,6 +1,8 @@
+from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
+from scipy.linalg import lu
 
 
 @dataclass
@@ -14,8 +16,8 @@ class QLDPCCode:
 
     @property
     def k(self) -> int:
-        rx = int(np.linalg.matrix_rank(self.Hx.astype(float)))
-        rz = int(np.linalg.matrix_rank(self.Hz.astype(float)))
+        rx = _gf2_rank(self.Hx)
+        rz = _gf2_rank(self.Hz)
         return self.n - rx - rz
 
     @property
@@ -27,11 +29,29 @@ class QLDPCCode:
         return int(self.Hz.sum(axis=1).max())
 
 
+def _gf2_rank(H: NDArray[np.uint8]) -> int:
+    """Gaussian elimination over GF(2) to compute matrix rank."""
+    M = H.copy().astype(np.uint8)
+    rows, cols = M.shape
+    rank = 0
+    for col in range(cols):
+        pivot = None
+        for row in range(rank, rows):
+            if M[row, col]:
+                pivot = row
+                break
+        if pivot is None:
+            continue
+        M[[rank, pivot]] = M[[pivot, rank]]
+        for row in range(rows):
+            if row != rank and M[row, col]:
+                M[row] ^= M[rank]
+        rank += 1
+    return rank
+
+
 def _cyclic_shift(n: int, shift: int) -> NDArray[np.uint8]:
-    S = np.zeros((n, n), dtype=np.uint8)
-    for i in range(n):
-        S[i, (i + shift) % n] = 1
-    return S
+    return np.roll(np.eye(n, dtype=np.uint8), shift, axis=1)
 
 
 def _bb_poly(l: int, m: int, exponents: list) -> NDArray[np.uint8]:

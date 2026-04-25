@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
 from compiler.fault_atom import FaultAtomLibrary
@@ -19,6 +20,7 @@ class FPGAPipeline:
         self._matcher = AtomMatcherArray(atom_library)
         self._engine = ResidualEliminationEngine(residual_graph, ns_per_residual_node)
         self._ns_per_atom = ns_per_atom_match
+        self._residual_graph = residual_graph
 
     def decode(self, detector_events: frozenset) -> ShotResult:
         atom = self._matcher.match(detector_events)
@@ -27,7 +29,12 @@ class FPGAPipeline:
             correction = candidates[0] if candidates else frozenset()
             return ShotResult(correction=correction, latency_ns=self._ns_per_atom,
                               atom_hit=True)
-        correction, latency = self._engine.solve()
+        # per-shot residual: only nodes present in this shot's unmatched detectors
+        active = frozenset(
+            d for d in detector_events
+            if d in self._residual_graph._g.nodes
+        )
+        correction, latency = self._engine.solve(active_nodes=active)
         return ShotResult(correction=correction, latency_ns=latency, atom_hit=False)
 
     def batch_decode(self, shots: list) -> dict:
