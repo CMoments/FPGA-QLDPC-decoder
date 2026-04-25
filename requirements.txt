@@ -1,0 +1,7 @@
+numpy>=1.26
+scipy>=1.12
+networkx>=3.2
+stim>=1.13
+pymatching>=2.2
+pytest>=8
+pytest-cov

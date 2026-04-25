@@ -1,0 +1,6 @@
+pyproject.toml
+src/qldpc_decoder_codesign.egg-info/PKG-INFO
+src/qldpc_decoder_codesign.egg-info/SOURCES.txt
+src/qldpc_decoder_codesign.egg-info/dependency_links.txt
+src/qldpc_decoder_codesign.egg-info/requires.txt
+src/qldpc_decoder_codesign.egg-info/top_level.txt
